@@ -47,26 +47,34 @@ namespace {
         .filter = sys_filter,
     };
 
-    void child_process(int socket)
+    int child_process(int socket)
     {
+        for (int fd = 0; fd < socket; fd++) {
+            close(fd);
+        }
+
         // We need to do this, otherwise PR_SET_SECCOMP will fail with EACCES.
         if (RESTRICT_ENABLE and (prctl(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0) != 0)) {
             die(EXIT_FAILURE, "PR_SET_NO_NEW_PRIVS");
         }
+
         if (RESTRICT_ENABLE and (prctl(PR_SET_SECCOMP, SECCOMP_MODE_FILTER, &sys_filter_prog, 0) != 0)) {
             die(EXIT_FAILURE, "PR_SET_SECCOMP");
         }
 
 
+        return 0;
     }
 
 
-    void parent_process(int socket)
+    int parent_process(int socket)
     {
         int status = 0;
         wait(&status);
+
+        return WIFEXITED(status) ? WEXITSTATUS(status) : -1;
     }
-};
+}
 
 int main()
 {
@@ -82,11 +90,5 @@ int main()
         die(EXIT_FAILURE, "fork");
     }
 
-    if (fork_ret == 0) {
-        child_process(sockets[0]);
-    } else {
-        parent_process(sockets[1]);
-    }
-
-    return 0;
+    return (fork_ret == 0) ? child_process(sockets[0]) : parent_process(sockets[1]);
 }

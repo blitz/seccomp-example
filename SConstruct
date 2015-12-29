@@ -2,11 +2,13 @@
 
 env = Environment()
 
-env.Program('seccomp', ['main.cpp'],
-            CPPFLAGS  = "-D_GNU_SOURCE",
+env.ParseConfig('pkg-config --cflags --libs capstone')
+env.Append( CPPFLAGS  = "-D_GNU_SOURCE",
             CCFLAGS   = "-O2 -g",
             CXXFLAGS  = "-std=c++14",
             LINKFLAGS = "-Wl,--gc-sections",
-            LIBS = ["owfat"])
+            LIBS      = "owfat")
+
+env.Program('seccomp', ['main.cpp'])
 
 # EOF
