@@ -1,11 +1,9 @@
 # -*- Mode: Python -*-
 
-env = Environment(CXX = "clang++")
+env = Environment()
 
-env.Append(CPPFLAGS  = "-D_GNU_SOURCE",
-           CCFLAGS   = "-Os",
-           CXXFLAGS  = "-std=c++14",
-           LINKFLAGS = "-Wl,--gc-sections")
+env.Append(CCFLAGS   = "-Os",
+           CXXFLAGS  = "-std=c++14")
 
 env.Program('seccomp', ['main.cpp'])
 
